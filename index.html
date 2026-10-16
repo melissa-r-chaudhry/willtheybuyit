@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Is anyone buying this?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6F4EF;
+    --card:#FFFFFF;
+    --ink:#21201C;
+    --ink-soft:#5B584F;
+    --ink-faint:#8A8676;
+    --rule:#DAD5C7;
+    --indigo:#2F3B57;
+    --indigo-soft:#48577D;
+    --green:#3F7A52;
+    --amber:#A9762C;
+    --red:#A03F3F;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    line-height:1.5;
+  }
+  #app{
+    max-width:640px;
+    margin:0 auto;
+    padding:56px 24px 96px;
+  }
+  header{
+    margin-bottom:36px;
+  }
+  .kicker{
+    color:var(--ink-soft);
+    font-size:0.95rem;
+    margin:0 0 10px;
+  }
+  h1{
+    font-family:'Source Serif 4',serif;
+    font-weight:700;
+    font-size:2.4rem;
+    line-height:1.1;
+    margin:0 0 14px;
+    letter-spacing:-0.01em;
+  }
+  header p{
+    color:var(--ink-soft);
+    font-size:1.02rem;
+    max-width:52ch;
+    margin:0;
+  }
+  .spine{
+    border-left:2px solid var(--rule);
+    padding-left:22px;
+    margin-left:2px;
+  }
+  .step{
+    position:relative;
+    margin-bottom:8px;
+  }
+  .step::before{
+    content:attr(data-n);
+    position:absolute;
+    left:-33px;
+    top:2px;
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:var(--paper);
+    border:2px solid var(--rule);
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.72rem;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .step-label{
+    font-weight:600;
+    font-size:1.08rem;
+    margin:0 0 12px;
+  }
+  .field-row{
+    display:flex;
+    gap:8px;
+    margin-bottom:6px;
+  }
+  input[type=text]{
+    flex:1;
+    font-family:'Inter',sans-serif;
+    font-size:1rem;
+    padding:12px 14px;
+    border:1px solid var(--rule);
+    border-radius:3px;
+    background:var(--card);
+    color:var(--ink);
+  }
+  input[type=text]:focus{
+    outline:none;
+    border-color:var(--indigo-soft);
+  }
+  button{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:0.95rem;
+    padding:12px 18px;
+    border-radius:3px;
+    border:1px solid var(--indigo);
+    background:var(--indigo);
+    color:#fff;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  button:hover{background:var(--indigo-soft);border-color:var(--indigo-soft);}
+  button:disabled{
+    background:var(--rule);
+    border-color:var(--rule);
+    color:var(--ink-faint);
+    cursor:default;
+  }
+  button.secondary{
+    background:transparent;
+    color:var(--indigo);
+  }
+  button.secondary:hover{background:#EFEDE5;}
+  .hint{
+    color:var(--ink-faint);
+    font-size:0.85rem;
+    margin:6px 0 0;
+  }
+  .loading{
+    color:var(--ink-soft);
+    font-size:0.92rem;
+    margin-top:10px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .dot{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--ink-faint);
+    animation:pulse 1.1s ease-in-out infinite;
+  }
+  .dot:nth-child(2){animation-delay:0.15s;}
+  .dot:nth-child(3){animation-delay:0.3s;}
+  @keyframes pulse{
+    0%,80%,100%{opacity:0.25;}
+    40%{opacity:1;}
+  }
+  .entry{
+    background:var(--card);
+    border:1px solid var(--rule);
+    border-left:4px solid var(--rule);
+    border-radius:2px;
+    padding:22px 24px;
+    margin:18px 0 30px;
+  }
+  .entry.green{border-left-color:var(--green);}
+  .entry.yellow{border-left-color:var(--amber);}
+  .entry.red{border-left-color:var(--red);}
+  .verdict-row{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .verdict{
+    font-family:'Source Serif 4',serif;
+    font-weight:700;
+    font-size:1.3rem;
+  }
+  .verdict.green{color:var(--green);}
+  .verdict.yellow{color:var(--amber);}
+  .verdict.red{color:var(--red);}
+  .score{
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--ink-soft);
+    font-size:0.95rem;
+  }
+  .signal{
+    padding:10px 0;
+    border-top:1px solid var(--rule);
+  }
+  .signal:first-of-type{border-top:none;}
+  .signal-name{
+    font-weight:600;
+    font-size:0.9rem;
+    margin:0 0 3px;
+  }
+  .signal-finding{
+    color:var(--ink-soft);
+    font-size:0.92rem;
+    margin:0;
+  }
+  .note{
+    font-style:italic;
+    color:var(--ink-faint);
+    font-size:0.85rem;
+    margin:14px 0 0;
+  }
+  .angle-box{
+    margin-top:16px;
+    padding:14px 16px;
+    background:#F6F4EF;
+    border-radius:3px;
+  }
+  .angle-box p{
+    margin:0 0 10px;
+    font-size:0.92rem;
+    color:var(--ink);
+  }
+  .angle-label{
+    font-size:0.78rem;
+    color:var(--ink-faint);
+    margin:0 0 4px;
+  }
+  .actions{
+    margin-top:18px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .promise{
+    color:var(--ink-soft);
+    font-size:0.98rem;
+    margin:2px 0 4px;
+  }
+  .format-tag{
+    display:inline-block;
+    font-size:0.78rem;
+    color:var(--indigo);
+    border:1px solid var(--indigo-soft);
+    border-radius:20px;
+    padding:2px 10px;
+    margin-bottom:14px;
+  }
+  .section-item{
+    display:flex;
+    gap:12px;
+    padding:9px 0;
+    border-top:1px solid var(--rule);
+  }
+  .section-item:first-of-type{border-top:none;}
+  .section-n{
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--ink-faint);
+    font-size:0.8rem;
+    flex-shrink:0;
+    padding-top:2px;
+  }
+  .section-name{font-weight:600;font-size:0.92rem;margin:0 0 2px;}
+  .section-desc{color:var(--ink-soft);font-size:0.9rem;margin:0;}
+  .price{
+    font-family:'Source Serif 4',serif;
+    font-weight:700;
+    font-size:1.6rem;
+    color:var(--indigo);
+    margin:0 0 6px;
+  }
+  .price-reason{color:var(--ink-soft);font-size:0.92rem;margin:0 0 18px;}
+  h3.sub{font-size:0.95rem;margin:18px 0 8px;}
+  .channel{padding:9px 0;border-top:1px solid var(--rule);}
+  .channel:first-of-type{border-top:none;}
+  .channel-name{font-weight:600;font-size:0.92rem;}
+  .channel-why{color:var(--ink-soft);font-size:0.88rem;margin:2px 0 0;}
+  ul.moves{margin:0;padding-left:20px;}
+  ul.moves li{color:var(--ink-soft);font-size:0.92rem;padding:4px 0;}
+  .error{
+    color:var(--red);
+    font-size:0.9rem;
+    margin-top:10px;
+  }
+  .reset-row{
+    margin-top:12px;
+  }
+  footer{
+    margin-top:20px;
+    color:var(--ink-faint);
+    font-size:0.82rem;
+    max-width:52ch;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <p class="kicker">A quick, honest check before you spend a weekend building anything.</p>
+    <h1>Is anyone buying this?</h1>
+    <p>Type an idea. It runs a live search for real demand signals, gives you a straight verdict, and only then helps you draft, price, and place the product — for free, no account, no countdown.</p>
+  </header>
+
+  <div class="spine">
+    <div class="step" data-n="1">
+      <p class="step-label">What's the idea?</p>
+      <div class="field-row">
+        <input type="text" id="ideaInput" placeholder="e.g. a wedding budget tracker for DIY brides" />
+        <button id="checkBtn">Check the evidence</button>
+      </div>
+      <p class="hint">Be as specific as you can — "budget tracker" is weaker evidence than "wedding budget tracker for DIY brides."</p>
+      <div id="loading1" class="loading" style="display:none;">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span>Searching for real signals…</span>
+      </div>
+      <div id="error1" class="error" style="display:none;"></div>
+    </div>
+  </div>
+
+  <div id="entries"></div>
+
+  <footer>
+    Every verdict, price range, and channel here comes from a live web search run at the moment you click — not a stored database. Treat it as a starting signal, not a guarantee: it can't see your ability to execute, and it can be wrong.
+  </footer>
+</div>
+
+<script>
+const ideaInput = document.getElementById('ideaInput');
+const checkBtn = document.getElementById('checkBtn');
+const loading1 = document.getElementById('loading1');
+const error1 = document.getElementById('error1');
+const entries = document.getElementById('entries');
+
+let entryCount = 0;
+
+ideaInput.addEventListener('keydown', e => { if (e.key === 'Enter') runCheck(); });
+checkBtn.addEventListener('click', () => runCheck());
+
+async function callClaude({system, user, useSearch, maxTokens}) {
+  // Calls our own server-side proxy (a self-hosted n8n proxy), never the Anthropic API
+  // directly — the real API key lives only in that proxy's n8n credential and
+  // is never sent to the browser. The proxy also enforces a per-IP rate limit.
+  const body = { system, user, useSearch: !!useSearch, maxTokens: maxTokens || 1000 };
+  const res = await fetch("/api/willtheybuyit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+  if (res.status === 429) throw new Error("This tool is getting a lot of traffic right now — try again in a few minutes.");
+  if (!res.ok) throw new Error("The request failed. Try again in a moment.");
+  const data = await res.json();
+  const text = (data.content || [])
+    .filter(b => b.type === "text")
+    .map(b => b.text)
+    .join("\n");
+  // The model is instructed to reply with ONLY JSON, but under real conditions
+  // (e.g. it hits a tool-use limit) it sometimes prefaces the JSON with a
+  // sentence of explanation first. Rather than assume the whole string is
+  // clean JSON, strip any markdown fences, then pull out just the {...} span
+  // — this is what actually broke in production before this fix.
+  const fenced = text.replace(/```json|```/g, "").trim();
+  const start = fenced.indexOf("{");
+  const end = fenced.lastIndexOf("}");
+  const clean = (start !== -1 && end !== -1 && end > start) ? fenced.slice(start, end + 1) : fenced;
+  try {
+    return JSON.parse(clean);
+  } catch (e) {
+    throw new Error("Got an unreadable response. Try again.");
+  }
+}
+
+async function runCheck(overrideIdea) {
+  const idea = (overrideIdea || ideaInput.value).trim();
+  if (!idea) { ideaInput.focus(); return; }
+
+  checkBtn.disabled = true;
+  error1.style.display = 'none';
+  loading1.style.display = 'flex';
+
+  try {
+    const result = await callClaude({
+      useSearch: true,
+      system: "You are a blunt, evidence-based market research assistant. Given a product idea, use web search to check real buyer demand: (1) whether people search for this or something close to it, (2) whether similar products already exist for sale and roughly what they cost, (3) whether a specific reachable audience exists for it, (4) whether the space is already flooded with free alternatives, (5) any other signal that clearly helps or hurts. Weigh what you actually find — do not inflate a weak idea to be encouraging, and do not undersell a strong one out of excess caution. If your search comes back thin, say so rather than guessing. Respond with ONLY a JSON object, no markdown fences, no commentary, in exactly this shape: {\"verdict\":\"GREEN\"|\"YELLOW\"|\"RED\",\"score\":<integer 0-100>,\"signals\":[{\"signal\":\"<short label>\",\"finding\":\"<one sentence, specific>\"}] (3 to 5 items),\"narrower_angle\":\"<a more specific angle that would strengthen this, or null>\",\"honest_note\":\"<one sentence on the limits of this evidence>\"}",
+      user: `Idea: "${idea}"`
+    });
+    renderVerdict(idea, result);
+  } catch (e) {
+    error1.textContent = e.message || "Something went wrong.";
+    error1.style.display = 'block';
+  } finally {
+    checkBtn.disabled = false;
+    loading1.style.display = 'none';
+  }
+}
+
+function renderVerdict(idea, r) {
+  entryCount++;
+  const cls = r.verdict.toLowerCase();
+  const div = document.createElement('div');
+  div.className = `entry ${cls}`;
+  div.dataset.n = entryCount;
+
+  let signalsHtml = r.signals.map(s => `
+    <div class="signal">
+      <p class="signal-name">${escapeHtml(s.signal)}</p>
+      <p class="signal-finding">${escapeHtml(s.finding)}</p>
+    </div>
+  `).join('');
+
+  let angleHtml = '';
+  if (r.narrower_angle) {
+    angleHtml = `
+      <div class="angle-box">
+        <p class="angle-label">A narrower angle that would strengthen this</p>
+        <p>${escapeHtml(r.narrower_angle)}</p>
+        <button class="secondary" data-action="try-angle">Check that angle instead</button>
+      </div>
+    `;
+  }
+
+  let actionsHtml = '<div class="actions">';
+  if (r.verdict === 'GREEN') {
+    actionsHtml += `<button data-action="build">Build the outline</button>`;
+  } else if (r.verdict === 'YELLOW') {
+    actionsHtml += `<button class="secondary" data-action="build">Build with this idea anyway</button>`;
+  }
+  actionsHtml += '</div>';
+
+  div.innerHTML = `
+    <div class="verdict-row">
+      <span class="verdict ${cls}">${r.verdict}</span>
+      <span class="score">${r.score} / 100</span>
+    </div>
+    <p class="promise" style="margin-top:-8px;font-weight:600;color:var(--ink);">"${escapeHtml(idea)}"</p>
+    ${signalsHtml}
+    <p class="note">${escapeHtml(r.honest_note)}</p>
+    ${angleHtml}
+    ${actionsHtml}
+  `;
+
+  entries.appendChild(div);
+
+  const buildBtn = div.querySelector('[data-action="build"]');
+  if (buildBtn) buildBtn.addEventListener('click', () => runBuild(idea, r, div));
+
+  const angleBtn = div.querySelector('[data-action="try-angle"]');
+  if (angleBtn) angleBtn.addEventListener('click', () => {
+    ideaInput.value = r.narrower_angle;
+    runCheck(r.narrower_angle);
+  });
+
+  div.scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
+
+async function runBuild(idea, verdictResult, parentDiv) {
+  const btn = parentDiv.querySelector('[data-action="build"]');
+  const orig = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Drafting…';
+
+  try {
+    const evidenceSummary = verdictResult.signals.map(s => `${s.signal}: ${s.finding}`).join(' | ');
+    const outline = await callClaude({
+      system: "You turn a product idea into a concrete, specific outline — never generic filler. Given the idea and the evidence behind it, pick the single best format for it (short guide, workbook, checklist, template pack, or similar) and lay out a real structure someone could start writing from today. Respond with ONLY JSON, no markdown fences, in exactly this shape: {\"title\":\"<specific product title>\",\"promise\":\"<one sentence on the transformation or outcome it delivers>\",\"format\":\"<short format label>\",\"sections\":[{\"name\":\"<section/module name>\",\"description\":\"<one sentence on what it covers>\"}] (5 to 8 items)}",
+      user: `Idea: "${idea}". Evidence: ${evidenceSummary}`
+    });
+    renderOutline(idea, outline);
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = orig;
+    alert(e.message || "Something went wrong drafting the outline.");
+    return;
+  }
+  btn.style.display = 'none';
+}
+
+function renderOutline(idea, o) {
+  entryCount++;
+  const div = document.createElement('div');
+  div.className = 'entry';
+
+  const sectionsHtml = o.sections.map((s, i) => `
+    <div class="section-item">
+      <span class="section-n">${String(i+1).padStart(2,'0')}</span>
+      <div>
+        <p class="section-name">${escapeHtml(s.name)}</p>
+        <p class="section-desc">${escapeHtml(s.description)}</p>
+      </div>
+    </div>
+  `).join('');
+
+  div.innerHTML = `
+    <span class="format-tag">${escapeHtml(o.format)}</span>
+    <p class="verdict" style="font-size:1.15rem;">${escapeHtml(o.title)}</p>
+    <p class="promise">${escapeHtml(o.promise)}</p>
+    ${sectionsHtml}
+    <div class="actions">
+      <button data-action="price">Price it &amp; find the buyers</button>
+    </div>
+  `;
+
+  entries.appendChild(div);
+
+  div.querySelector('[data-action="price"]').addEventListener('click', () => runPrice(o, div));
+  div.scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
+
+async function runPrice(outline, parentDiv) {
+  const btn = parentDiv.querySelector('[data-action="price"]');
+  const orig = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Researching…';
+
+  try {
+    const pricing = await callClaude({
+      useSearch: true,
+      system: "You price a finished digital product and identify where to sell it. Use web search to find real comparable products currently for sale (Etsy, Gumroad, Whop, Payhip, Amazon KDP, or wherever fits the topic) as pricing evidence, and identify where this specific buyer audience actually spends time online. Respond with ONLY JSON, no markdown fences, in exactly this shape: {\"price_low\":<number>,\"price_high\":<number>,\"price_reasoning\":\"<one to two sentences citing what you actually found>\",\"channels\":[{\"name\":\"<channel or community>\",\"why\":\"<one sentence>\"}] (3 to 5 items),\"first_moves\":[\"<concrete first action>\"] (5 items)}",
+      user: `Product: "${outline.title}" — ${outline.promise}. Format: ${outline.format}.`
+    });
+    renderPricing(pricing);
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = orig;
+    alert(e.message || "Something went wrong finding buyers.");
+    return;
+  }
+  btn.style.display = 'none';
+}
+
+function renderPricing(p) {
+  entryCount++;
+  const div = document.createElement('div');
+  div.className = 'entry';
+
+  const channelsHtml = p.channels.map(c => `
+    <div class="channel">
+      <p class="channel-name">${escapeHtml(c.name)}</p>
+      <p class="channel-why">${escapeHtml(c.why)}</p>
+    </div>
+  `).join('');
+
+  const movesHtml = p.first_moves.map(m => `<li>${escapeHtml(m)}</li>`).join('');
+
+  div.innerHTML = `
+    <p class="price">$${p.price_low}–$${p.price_high}</p>
+    <p class="price-reason">${escapeHtml(p.price_reasoning)}</p>
+    <h3 class="sub">Where the buyers already are</h3>
+    ${channelsHtml}
+    <h3 class="sub">First moves</h3>
+    <ul class="moves">${movesHtml}</ul>
+    <div class="reset-row">
+      <button class="secondary" data-action="reset">Start a new idea</button>
+    </div>
+  `;
+
+  entries.appendChild(div);
+  div.querySelector('[data-action="reset"]').addEventListener('click', () => {
+    entries.innerHTML = '';
+    ideaInput.value = '';
+    entryCount = 0;
+    ideaInput.focus();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  div.scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
+
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str == null ? '' : String(str);
+  return d.innerHTML;
+}
+</script>
+</body>
+</html>
